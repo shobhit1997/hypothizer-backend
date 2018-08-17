@@ -1,0 +1,16 @@
+{
+  "name": "import-csv",
+  "version": "1.0.0",
+  "description": "hypothiser-backend",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Shobhit Agarwal",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "fast-csv": "^2.4.1",
+    "mongoose": "^5.2.8"
+  }
+}
