@@ -5,7 +5,8 @@ var mongoose	=	require('mongoose');
 var Population 	=	require('./app/models/population');
 var csv = require("fast-csv");
 var fs = require('fs');
-mongoose.connect('mongodb://shobhit:shobhit1997@ds117701.mlab.com:17701/feeds_app');
+const _ 	=	require('lodash');
+mongoose.connect('mongodb://localhost:27017/hypothizer');
 
 app.use(bodyParser.urlencoded({extended : true}));
 app.use(bodyParser.json());
@@ -15,6 +16,7 @@ app.use(function (req, res, next) {
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Expose-Headers', 'x-auth');
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
     res.setHeader('Access-Control-Allow-Headers','Origin, X-Requested-With,content-type, Accept , x-auth');
     // res.setHeader('Access-Control-Allow-Credentials', true);
 
@@ -42,6 +44,53 @@ router.route('/data')
 	.get(function(req,res){
 		Population.find().then(function(population){
 			res.send(population);
+		});
+	})
+	.post(function(req,res){
+		console.log(req.body);
+		var body=_.pick(req.body,['year','population','growth_rate','growth']);
+		console.log(body);
+		var population=new Population(body);
+		population.save().then(function(data){
+			res.send(data);
+		}).catch(function(e){
+			res.status(400).send();
+		});
+	})
+	.put(function(req,res){
+		Population.findByIdAndUpdate(req.body._id, {
+	        year: req.body.year,
+	        population: req.body.population,
+	        growth_rate:req.body.growth_rate,
+	        growth:req.body.growth
+	    }).then(function(data){
+	        if(!data) {
+	           	res.status(404).send("Not found");
+	        }
+	        else{
+	        	res.send(data);	
+	        }
+	        
+	    }).catch(function(err) {
+	        if(err.kind === 'ObjectId') {
+	            res.status(404).send("Not found");                
+	        }
+	        else{
+	        	res.status(500).send();
+	        }
+	    });
+	});
+router.route('/data/:id')
+	.delete(function(req,res){
+		Population.findByIdAndRemove(req.params.id).then(function(data){
+			if(data){
+				res.send(data);
+			}
+			else{
+				res.status(404).send("Not found");
+			}
+		}).catch(function(e){
+			res.send(404).send("Not found");
 		});
 	});
 router.route('/import')
@@ -79,14 +128,10 @@ router.route('/import')
 
 			    }).on("end", function(){
 			          console.log(" End of file import");
+			          stream.close();
 			          res.send({success : "Data imported successfully.", status : 200});
 			    });
-			
-		  
 		    stream.pipe(csvStream);
-
-		    
-     
 	});
 app.use('/api',router);
 app.use(express.static('./public'));

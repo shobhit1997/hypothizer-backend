@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-
+const _ 	=	require('lodash');
 var Schema = mongoose.Schema;
 
 var populationSchema = new Schema({
@@ -12,5 +12,11 @@ var populationSchema = new Schema({
 
   growth: { type: Number }
 });
+populationSchema.methods.toJSON=function(){
+	var population=this;
+	var  populationObject= population.toObject();
+
+	return _.pick(populationObject,['_id','year','population','growth_rate','growth']); 
+}
 
 module.exports = mongoose.model('Population', populationSchema);
